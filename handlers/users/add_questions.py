@@ -24,8 +24,23 @@ async def add_questions(message:Message, state:FSMContext):
 async def test_name(message:Message, state:FSMContext):
     test_name = message.text
     await state.update_data(test_name=test_name)
-    await message.answer(text="Toplamda necha savol bo'ladi ?", reply_markup=number)
-    await state.set_state(Questions.number_question)
+
+    question_number = qb.test_number(test_name)
+    
+    if question_number:
+        numbers = question_number[0][0]
+        await state.update_data(number_question=numbers)
+        data = await state.get_data()
+        test_name = data.get("test_name")
+        question_count = len(qb.get_questions(test_name))
+        text = f"{question_count + 1} savolni yozing !"
+        await message.answer(text)
+        await state.set_state(Questions.question)
+        
+    else:
+        await message.answer(text="Toplamda necha savol bo'ladi ?", reply_markup=number)
+        await state.set_state(Questions.number_question)
+
 
 @dp.message(Questions.test_name)
 async def test_name_del(message:Message, state:FSMContext):
@@ -36,9 +51,14 @@ async def test_name_del(message:Message, state:FSMContext):
 @dp.callback_query(F.data, Questions.number_question,IsBotAdminFilter(ADMINS))
 async def numbers_question(call:CallbackQuery, state:FSMContext):
     await call.message.delete()
-    number_question = call.message.text
+    number_question = call.data
     await state.update_data(number_question=number_question)
-    await call.message.answer(text="Savolni yozing !")
+
+    data = await state.get_data()
+    test_name = data.get("test_name")
+    question_number = len(qb.get_questions(test_name))
+    text = f"{question_number + 1} savolni yozing !"
+    await call.message.answer(text)
     await state.set_state(Questions.question)
 
 @dp.message(Questions.number_question)
