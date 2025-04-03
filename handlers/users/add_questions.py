@@ -26,17 +26,20 @@ async def test_name(message:Message, state:FSMContext):
     await state.update_data(test_name=test_name)
 
     question_number = qb.test_number(test_name)
+    question_count = len(qb.get_questions(test_name))
     
     if question_number:
         numbers = question_number[0][0]
         await state.update_data(number_question=numbers)
         data = await state.get_data()
         test_name = data.get("test_name")
-        question_count = len(qb.get_questions(test_name))
         text = f"{question_count + 1} savolni yozing !"
         await message.answer(text)
         await state.set_state(Questions.question)
-        
+    elif question_count == question_number[0][0]:
+        answer_text = f"Siz ushbu testga {question_number[0][0]} ta test qo'shib bo'lgansiz bundan ko'p qo'sha olmaysiz ❗️"
+        await message.answer(answer_text)
+        await state.clear()
     else:
         await message.answer(text="Toplamda necha savol bo'ladi ?", reply_markup=number)
         await state.set_state(Questions.number_question)
