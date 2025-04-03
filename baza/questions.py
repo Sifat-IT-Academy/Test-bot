@@ -51,7 +51,7 @@ class Database:
     
     def add_questions(self, test_name, number_question, question, a, b, c, d, answer):
         sql = """
-        INSERT INTO Questions(test_name, number_question, question, A, B, C, D, answer) VALUES(?, ?, ?, ?, ?, ?, ?);
+        INSERT INTO Questions(test_name, number_question, question, A, B, C, D, answer) VALUES(?, ?, ?, ?, ?, ?, ?, ?);
         """
         self.execute(sql, parameters=(test_name, number_question, question, a, b, c, d, answer), commit=True)
 
@@ -61,6 +61,10 @@ class Database:
     
     def get_questions(self, test_name):
         sql = """SELECT * FROM Questions WHERE test_name = ?;"""
+        return self.execute(sql, parameters=(test_name,), fetchall=True)
+        
+    def test_number(self, test_name):
+        sql = """SELECT number_question FROM Questions WHERE test_name = ?;"""
         return self.execute(sql, parameters=(test_name,), fetchall=True)
 
 def logger(statement):
