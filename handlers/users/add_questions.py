@@ -8,11 +8,16 @@ from aiogram.types import ReplyKeyboardRemove
 from aiogram.types import Message, CallbackQuery
 from keyboard_buttons.default.button import get_buttun
 from keyboard_buttons.inline.menu import number, option, ask
-from keyboard_buttons.default.admin_keyboard import admin_qustions
+from keyboard_buttons.default.admin_keyboard import admin_qustions, admin_button
 
 @dp.message(F.text=="Savollar bo'limi", IsBotAdminFilter(ADMINS))
 async def questions_menu(message:Message):
     await message.answer("Savollar bo'limi", reply_markup=admin_qustions)
+
+@dp.message(F.text=="Orqaga qaytish 🔙", IsBotAdminFilter(ADMINS))
+async def back(message:Message, state:FSMContext):
+    await message.answer("Menu", reply_markup=admin_button)
+    await state.clear()
 
 @dp.message(F.text=="➕ Savol qo'shish", IsBotAdminFilter(ADMINS))
 async def add_questions(message:Message, state:FSMContext):
@@ -26,17 +31,21 @@ async def test_name(message:Message, state:FSMContext):
     await state.update_data(test_name=test_name)
 
     question_number = qb.test_number(test_name)
+    question_count = len(qb.get_questions(test_name))
     
-    if question_number:
+    if question_count == question_number[0][0]:
+        answer_text = f"Siz ushbu testga {question_number[0][0]} ta test qo'shib bo'lgansiz bundan ko'p qo'sha olmaysiz ❗️"
+        await message.answer(answer_text)
+        await state.clear()
+
+    elif question_number:
         numbers = question_number[0][0]
         await state.update_data(number_question=numbers)
         data = await state.get_data()
         test_name = data.get("test_name")
-        question_count = len(qb.get_questions(test_name))
-        text = f"{question_count + 1} savolni yozing !"
+        text = f"{question_count + 1} savolni yozing ✍️ yoki rasm kiriting 🖼"
         await message.answer(text)
         await state.set_state(Questions.question)
-        
     else:
         await message.answer(text="Toplamda necha savol bo'ladi ?", reply_markup=number)
         await state.set_state(Questions.number_question)
@@ -57,7 +66,7 @@ async def numbers_question(call:CallbackQuery, state:FSMContext):
     data = await state.get_data()
     test_name = data.get("test_name")
     question_number = len(qb.get_questions(test_name))
-    text = f"{question_number + 1} savolni yozing !"
+    text = f"{question_number + 1} savolni yozing ✍️ yoki rasm kiriting 🖼"
     await call.message.answer(text)
     await state.set_state(Questions.question)
 
@@ -67,16 +76,22 @@ async def numbers_question_del(message:Message, state:FSMContext):
     await message.delete()
 
 # Start: Savolni olish
-@dp.message(F.text, Questions.question, IsBotAdminFilter(ADMINS))
+@dp.message(F.text | F.photo, Questions.question, IsBotAdminFilter(ADMINS))
 async def question(message:Message, state:FSMContext):
-    question = message.text
-    await state.update_data(question=question)
+    if message.photo:
+        photo = message.photo[-1].file_id
+        await state.update_data(question=photo)
+
+    elif message.text:
+        question = message.text
+        await state.update_data(question=question)
+
     await message.answer(text="A variant javobini yozing !")
     await state.set_state(Questions.a)
 
 @dp.message(Questions.question)
 async def question_del(message:Message, state:FSMContext):
-    await message.answer(text= "Faqat matn yozing, boshqa fayllar mumkin emas ! ")
+    await message.answer(text= "Faqat matn yozing yoki rasm kiriting, boshqa fayllar mumkin emas ! ")
     await message.delete()
 
 # Start: A javobini olish
