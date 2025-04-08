@@ -9,3 +9,6 @@ class Questions(StatesGroup):
     c = State()
     d = State()
     answer = State()
+class DeleteQuestions(StatesGroup):
+    test_name = State()
+    

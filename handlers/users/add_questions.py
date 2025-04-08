@@ -25,31 +25,33 @@ async def add_questions(message:Message, state:FSMContext):
     await state.set_state(Questions.test_name)
 
 # Start: Test nomini olish
-@dp.message(F.text, Questions.test_name,IsBotAdminFilter(ADMINS))
-async def test_name(message:Message, state:FSMContext):
+@dp.message(F.text, Questions.test_name, IsBotAdminFilter(ADMINS))
+async def test_name(message: Message, state: FSMContext):
     test_name = message.text
     await state.update_data(test_name=test_name)
 
     question_number = qb.test_number(test_name)
     question_count = len(qb.get_questions(test_name))
-    
-    if question_count == question_number[0][0]:
-        answer_text = f"Siz ushbu testga {question_number[0][0]} ta test qo'shib bo'lgansiz bundan ko'p qo'sha olmaysiz ❗️"
-        await message.answer(answer_text)
-        await state.clear()
 
-    elif question_number:
-        numbers = question_number[0][0]
-        await state.update_data(number_question=numbers)
-        data = await state.get_data()
-        test_name = data.get("test_name")
-        text = f"{question_count + 1} savolni yozing ✍️ yoki rasm kiriting 🖼"
+    # Agar question_number bo‘sh bo‘lsa (ya'ni test hali yaratilmagan bo‘lsa)
+    if not question_number:
+        await message.answer("Toplamda necha savol bo'ladi?", reply_markup=number)
+        await state.set_state(Questions.number_question)
+        return
+
+    # Mavjud testdagi savollar soni
+    total_questions = question_number[0][0]
+
+    if question_count == total_questions:
+        await message.answer(
+            f"Siz ushbu testga {total_questions} ta test qo'shib bo'lgansiz. Boshqa qo'sha olmaysiz ❗️"
+        )
+        await state.clear()
+    else:
+        await state.update_data(number_question=total_questions)
+        text = f"{question_count + 1} - savolni yozing ✍️ yoki rasm kiriting 🖼"
         await message.answer(text)
         await state.set_state(Questions.question)
-    else:
-        await message.answer(text="Toplamda necha savol bo'ladi ?", reply_markup=number)
-        await state.set_state(Questions.number_question)
-
 
 @dp.message(Questions.test_name)
 async def test_name_del(message:Message, state:FSMContext):

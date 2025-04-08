@@ -1,6 +1,5 @@
 import sqlite3
 
-
 class Database:
     def __init__(self, path_to_db="main.db"):
         self.path_to_db = path_to_db
@@ -66,6 +65,12 @@ class Database:
     def test_number(self, test_name):
         sql = """SELECT number_question FROM Questions WHERE test_name = ?;"""
         return self.execute(sql, parameters=(test_name,), fetchall=True)
+
+    def delete_questions(self, test_name):
+        sql = """
+        DELETE FROM Questions WHERE test_name = ?;
+        """
+        return self.execute(sql, parameters=(test_name,), commit=True)
 
 def logger(statement):
     print(f"""
