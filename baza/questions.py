@@ -1,6 +1,5 @@
 import sqlite3
 
-
 class Database:
     def __init__(self, path_to_db="main.db"):
         self.path_to_db = path_to_db
@@ -32,6 +31,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS Questions(
         test_name TEXT,
         number_question INTEGER,
+        types TEXT,
         question TEXT,
         A TEXT,
         B TEXT,
@@ -49,11 +49,11 @@ class Database:
         ])
         return sql, tuple(parameters.values())
     
-    def add_questions(self, test_name, number_question, question, a, b, c, d, answer):
+    def add_questions(self, test_name, number_question, types, question, a, b, c, d, answer):
         sql = """
-        INSERT INTO Questions(test_name, number_question, question, A, B, C, D, answer) VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+        INSERT INTO Questions(test_name, number_question, types, question, A, B, C, D, answer) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
         """
-        self.execute(sql, parameters=(test_name, number_question, question, a, b, c, d, answer), commit=True)
+        self.execute(sql, parameters=(test_name, number_question, types, question, a, b, c, d, answer), commit=True)
 
     def question_names(self):
         sql = """SELECT test_name FROM Questions;"""
@@ -66,6 +66,12 @@ class Database:
     def test_number(self, test_name):
         sql = """SELECT number_question FROM Questions WHERE test_name = ?;"""
         return self.execute(sql, parameters=(test_name,), fetchall=True)
+
+    def delete_questions(self, test_name):
+        sql = """
+        DELETE FROM Questions WHERE test_name = ?;
+        """
+        return self.execute(sql, parameters=(test_name,), commit=True)
 
 def logger(statement):
     print(f"""

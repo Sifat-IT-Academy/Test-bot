@@ -30,6 +30,15 @@ ask = InlineKeyboardMarkup(
     ]
 )
 
+delete_ask = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text="✅", callback_data="del_true"), 
+            InlineKeyboardButton(text="❌", callback_data="del_false"), 
+        ]
+    ]
+)
+
 start_test = InlineKeyboardMarkup(
     inline_keyboard=[
         [
