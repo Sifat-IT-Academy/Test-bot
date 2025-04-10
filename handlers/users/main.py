@@ -1,4 +1,4 @@
-from loader import dp, qb, bot
+from loader import dp, qb, bot, ADMINS
 from aiogram.types import Message, CallbackQuery, PollAnswer
 from aiogram import F
 from keyboard_buttons.inline.menu import start_test
@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 import asyncio
 from keyboard_buttons.default.button import get_test
 from states.all_questions import TestState  # Yangi TestState ishlatiladi
+from states.help_stt import create_inline_keyboard
 
 # Testni boshlash menyusi
 @dp.message(lambda message: message.text == "Test yechish")
@@ -60,7 +61,16 @@ async def send_question(chat_id, state: FSMContext):
     if current_index >= len(questions):
         correct = data.get("correct", 0)
         total = len(questions)
-        await bot.send_message(chat_id, f"Test tugadi! To'g'ri javoblar: {correct}/{total}")
+        test_percentage = (correct / total) * 100
+        await bot.send_message(chat_id, f"siz testni tugatdingiz ! \nSizning natijangiz: {correct}/{total} | {test_percentage:.1f}% \nSizni natijangiz adminga yuborildi admin javobini kuting !")
+        inline_keyboard = create_inline_keyboard(chat_id)
+        for admin in ADMINS:
+            await bot.send_message(
+                admin,
+                f"Testni tugatgan foydalanuvchi: <a href='tg://user?id={chat_id}'>Kimdur</a> \nNatija: {correct}/{total} | {test_percentage:.1f}%",
+                reply_markup=inline_keyboard,
+                parse_mode="HTML"
+            )
         await state.clear() 
         return
 
@@ -79,7 +89,7 @@ async def send_question(chat_id, state: FSMContext):
             type="quiz",
             correct_option_id=correct_option_id,
             is_anonymous=False,
-            open_period=30
+            open_period=45
         )
     elif types == "photo":
         await bot.send_photo(chat_id, photo=question, caption="Quyidagi savolga javob bering:")
@@ -90,7 +100,7 @@ async def send_question(chat_id, state: FSMContext):
             type="quiz",
             correct_option_id=correct_option_id,
             is_anonymous=False,
-            open_period=30
+            open_period=45
         )
 
     # Poll ID va timeout taskni saqlash
@@ -98,9 +108,9 @@ async def send_question(chat_id, state: FSMContext):
     timeout_task = asyncio.create_task(timeout_handler(chat_id, state, current_index))
     await state.update_data(current_poll_id=poll_id, timeout_task=timeout_task)
 
-# Timeout handler (30 soniya o'tganda keyingi savolga o'tish)
+# Timeout handler (45 soniya o'tganda keyingi savolga o'tish)
 async def timeout_handler(chat_id, state: FSMContext, index):
-    await asyncio.sleep(30)
+    await asyncio.sleep(45)
     data = await state.get_data()
     if data.get("current_index") == index:  # Agar joriy savol o'zgarmagan bo'lsa
         await state.update_data(current_index=index + 1)
