@@ -1,12 +1,12 @@
-from loader import dp, qb, bot, ADMINS
-from aiogram.types import Message, CallbackQuery, PollAnswer
-from aiogram import F
-from keyboard_buttons.inline.menu import start_test
-from aiogram.fsm.context import FSMContext
 import asyncio
-from keyboard_buttons.default.button import get_test
-from states.all_questions import TestState  # Yangi TestState ishlatiladi
+from aiogram import F
+from loader import dp, qb, bot, ADMINS
+from states.all_questions import TestState  
+from aiogram.fsm.context import FSMContext
 from states.help_stt import create_inline_keyboard
+from keyboard_buttons.inline.menu import start_test
+from keyboard_buttons.default.button import get_test
+from aiogram.types import Message, CallbackQuery, PollAnswer
 
 # Testni boshlash menyusi
 @dp.message(lambda message: message.text == "Test yechish")
@@ -64,10 +64,11 @@ async def send_question(chat_id, state: FSMContext):
         test_percentage = (correct / total) * 100
         await bot.send_message(chat_id, f"siz testni tugatdingiz ! \nSizning natijangiz: {correct}/{total} | {test_percentage:.1f}% \nSizni natijangiz adminga yuborildi admin javobini kuting !")
         inline_keyboard = create_inline_keyboard(chat_id)
+        user = await bot.get_chat(chat_id)
         for admin in ADMINS:
             await bot.send_message(
                 admin,
-                f"Testni tugatgan foydalanuvchi: <a href='tg://user?id={chat_id}'>Kimdur</a> \nNatija: {correct}/{total} | {test_percentage:.1f}%",
+                f"Testni tugatgan foydalanuvchi: <a href='tg://user?id={chat_id}'>{user.full_name}</a> \nNatija: {correct}/{total} | {test_percentage:.1f}%",
                 reply_markup=inline_keyboard,
                 parse_mode="HTML"
             )
