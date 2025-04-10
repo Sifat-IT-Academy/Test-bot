@@ -31,6 +31,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS Questions(
         test_name TEXT,
         number_question INTEGER,
+        types TEXT,
         question TEXT,
         A TEXT,
         B TEXT,
@@ -48,11 +49,11 @@ class Database:
         ])
         return sql, tuple(parameters.values())
     
-    def add_questions(self, test_name, number_question, question, a, b, c, d, answer):
+    def add_questions(self, test_name, number_question, types, question, a, b, c, d, answer):
         sql = """
-        INSERT INTO Questions(test_name, number_question, question, A, B, C, D, answer) VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+        INSERT INTO Questions(test_name, number_question, types, question, A, B, C, D, answer) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
         """
-        self.execute(sql, parameters=(test_name, number_question, question, a, b, c, d, answer), commit=True)
+        self.execute(sql, parameters=(test_name, number_question, types, question, a, b, c, d, answer), commit=True)
 
     def question_names(self):
         sql = """SELECT test_name FROM Questions;"""

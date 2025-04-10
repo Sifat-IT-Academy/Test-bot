@@ -3,7 +3,7 @@ from aiogram import F
 from loader import dp, qb, ADMINS
 from aiogram.fsm.context import FSMContext
 from filters.admin import IsBotAdminFilter
-from states.add_questions import DeleteQuestions
+from states.all_questions import DeleteQuestions
 from aiogram.types import Message, CallbackQuery
 from keyboard_buttons.default.button import get_buttun
 from keyboard_buttons.default.admin_keyboard import admin_qustions

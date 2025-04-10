@@ -16,7 +16,3 @@ def create_inline_keyboard(user_id):
     )
 
     return keyboard_builder.as_markup()
-
-class NumberTest(StatesGroup):
-    for i in range(1, 11):
-        locals()[f"test_{i}"] = State()

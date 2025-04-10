@@ -2,7 +2,7 @@ import asyncio
 from aiogram import F
 from loader import dp,qb, ADMINS
 from filters.admin import IsBotAdminFilter
-from states.add_questions import Questions
+from states.all_questions import Questions
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.types import Message, CallbackQuery
@@ -32,6 +32,7 @@ async def test_name(message: Message, state: FSMContext):
 
     question_number = qb.test_number(test_name)
     question_count = len(qb.get_questions(test_name))
+    print(question_number)
 
     # Agar question_number bo‘sh bo‘lsa (ya'ni test hali yaratilmagan bo‘lsa)
     if not question_number:
@@ -48,7 +49,11 @@ async def test_name(message: Message, state: FSMContext):
         )
         await state.clear()
     else:
-        await state.update_data(number_question=total_questions)
+        if question_count == 0:
+            await state.update_data(number_question=total_questions)
+        else:
+            total_questions = total_questions - question_count
+            await state.update_data(number_question=total_questions)
         text = f"{question_count + 1} - savolni yozing ✍️ yoki rasm kiriting 🖼"
         await message.answer(text)
         await state.set_state(Questions.question)
@@ -83,10 +88,12 @@ async def question(message:Message, state:FSMContext):
     if message.photo:
         photo = message.photo[-1].file_id
         await state.update_data(question=photo)
+        await state.update_data(types="photo")
 
     elif message.text:
         question = message.text
         await state.update_data(question=question)
+        await state.update_data(types="text")
 
     await message.answer(text="A variant javobini yozing !")
     await state.set_state(Questions.a)
@@ -155,6 +162,8 @@ async def answer(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     test_name = data.get("test_name")
     number_question = data.get("number_question")
+    types = data.get("types")
+    print(types)
     question = data.get("question")
     a = data.get("a")
     b = data.get("b")
@@ -165,6 +174,7 @@ async def answer(callback: CallbackQuery, state: FSMContext):
     qb.add_questions(
         test_name=test_name, 
         number_question=number_question,
+        types=types,
         question=question, 
         a=a, b=b, c=c, d=d, 
         answer=answer
